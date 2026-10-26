@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Resume</title>
+  </head>
+  <body>
+    <script src="javascript.js"></script>
+    <h3 id="jsload">Scripts not loaded..</h3>
+    <h2>Patrick Hunter</h2>
+
+    <nav>>
+    <a href="mailto:patrickhunter1212@gmail.com">patrickhunter1212@gmail.com</a>
+    <a>(631) 617-0692</a>
+    <a href="https://github.com/pehunter">github.com/pehunter</a>
+    <a href="https://www.linkedin.com/in/patrick-hunter-0b4420224/"
+      >linkedin.com/in/patrick-hunter-0b442022</a
+    >
+    </nav>
+    <hr />
+
+    <p>
+      Experience
+      <br /><br />
+      <b>Software Engineer,</b> Naval Undersea Warfare Center, Newport, RI
+      <ul>
+        <li>Identified deployment as a
+    release bottleneck and created a GitHub Actions deployment pipeline for
+    cross-platform (Windows and Linux) project builds, reducing deployment time
+    from 2 hours to 5 minutes</li>
+    <li>Established unit-testing practices for the
+    project, writing 450 test cases covering 80% of the code to satisfy the
+    Software Test Requirements</li>
+    <li>Designed a multi-threaded, RESTful API in
+    C++ to control a hardware simulator, turning a local-only tool into a
+    network-accessible service</li>
+    <li>Prototyped a TCP/IP stack on FPGA hardware
+    using Verilog to replace UDP, reducing packet loss from 50% down to 0%
+    with an increase of 10µs under test load</li>
+    <li>Created a microservice
+    in Go to configure IP camera hardware, simplifying configuration by
+    consolidating 6 camera GET requests into a single POST to the service</li>
+    <li>Delivered a widget to plot 4 acoustic features of water against depth using
+    LightningChart, letting researchers analyze recorded data more precisely</li>
+    <li>Built a React dashboard to manage package security vulnerabilities,
+    used by cybersecurity admins to track and justify ~100 vulnerabilities</li>
+      </ul>
+
+      <b>Intern Software Engineer,</b> MVP Healthcare, Schenectady, NY
+      <ul>
+        <li>Wrote SQL queries to retrieve all accounts under a healthcare
+    provider's ID, consolidating ~20 separate logins into a single sign-on</li>
+    <li>Rewrote outdated SOAP API endpoints in C#, enabling integration
+    with Azure cloud services</li>
+    </ul>
+
+      <b>Intern Software Engineer,</b> BAE Systems, Greenlawn, NY
+      <ul>
+        <li>Wrote a Python script to identify
+    improperly positioned aircraft by pulling data from Elasticsearch and
+    computing the collision airspace zone of ownship</li>
+    <li>Developed a tool to
+    parse, reconstruct, and display memory dumps in a human-readable format,
+    improving cross-team communication about any findings</li>
+    </ul>
+
+</p>
+
+<p>
+      Projects
+      <br /><br />
+      <b>Crochette,</b> <a href="https://github.com/pehunter/Crochette">github.com/pehunter/Crochette</a>
+      <ul>
+        <li>Designed a web app using Django and
+    Python to accept requests from clients and delegate them to internal
+    microservices
+    </li>
+    <li>
+        Tracked logged in users in a microservice using Go and
+    Redis to ensure minimal latency
+    </li>
+    <li>
+        Managed persistent user data through
+    microservices with Postgres and Go, loosening coupling across the database
+    </li>
+    <li>
+        Containerized and deployed microservices with Docker and Kubernetes,
+    allowing for easy scalability
+    </li>
+    </ul>
+
+    <b>Echolocation,</b> <a href="https://github.com/pehunter/echolocation">github.com/pehunter/echolocation</a>
+      <ul>
+        <li>Built a Rust program to position
+    microphone input in 3D space using a head-related transfer function
+    constructed from spatial acoustic data</li>
+    <li>
+Processed audio input and
+    output on separate threads using channels to communicate, resulting in a
+    lock-free, low-latency design for the program
+    </li>
+    </ul>
+
+    <b>Solitaire AI,</b> <a href="https://github.com/pehunter/solitaire-ai">github.com/pehunter/solitaire-ai</a>
+      <ul>
+        <li>Trained a machine learning algorithm
+    to predict the best move to make in a game of Solitaire by collecting
+    gameplay data and training multiclass logistic regression models with
+    scikit-learn</li>
+    </ul>
+
+</p>
+<p>
+    Education
+    <br/><br/>
+    <b>Worcester Polytechnic Institute, </b> May 2024<br>
+    <span>
+    Bachelor of Science in Computer Science<br>
+    Bachelor of
+    Science in Electrical and Computer Engineering<br>
+    GPA 3.83/4.00<br>
+    </span>
+</p>
+<p>
+    Skills<br>
+    <br>
+    <b>Languages: </b>Go,    C++17/20, Python, Rust, TypeScript, C, C\#, SQL<br>
+    <b>Frameworks: </b>Qt,
+    React, Redux, Vitest, ASP.NET, Pandas, Django<br>
+    <b>Tools: </b>Docker,
+    Kubernetes, Postgres, Redis, GitHub Actions<br>
+
+</p>
+  </body>
+</html>
