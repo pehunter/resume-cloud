@@ -30,6 +30,14 @@ resource "aws_s3_bucket" "static" {
   bucket = var.bucket_name
 }
 
+locals {
+  mime_types = {
+    "html" = "text/html"
+    "js"   = "text/javascript"
+    "css"  = "text/css"
+  }
+}
+
 resource "aws_s3_object" "files" {
   for_each = fileset("static_files/", "*")
 
@@ -37,6 +45,8 @@ resource "aws_s3_object" "files" {
   key    = each.value
   source = "static_files/${each.value}"
   etag   = filemd5("static_files/${each.value}")
+
+  content_type = lookup(local.mime_types, element(split(".", each.value), length(split(".", each.value)) - 1), "text/html")
 }
 
 #Bucket policy
@@ -114,4 +124,124 @@ resource "aws_cloudfront_distribution" "static-s3-distribution" {
       }
     }
   }
+}
+
+#API
+
+resource "aws_apigatewayv2_api" "api" {
+  name          = "static-site"
+  protocol_type = "HTTP"
+
+  cors_configuration {
+    allow_origins = ["*"]
+    allow_headers = ["GET"]
+  }
+}
+
+resource "aws_apigatewayv2_route" "visitor" {
+  api_id    = aws_apigatewayv2_api.api.id
+  route_key = "GET /visitor"
+  target    = "integrations/${aws_apigatewayv2_integration.api-lambda-integration.id}"
+}
+
+resource "aws_apigatewayv2_integration" "api-lambda-integration" {
+  api_id           = aws_apigatewayv2_api.api.id
+  integration_type = "AWS_PROXY"
+
+  description        = "When visited, increments website visitor count"
+  integration_method = "POST"
+  integration_uri    = aws_lambda_function.visitor-count.invoke_arn
+
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_stage" "api-default-stage" {
+  api_id      = aws_apigatewayv2_api.api.id
+  name        = "$default"
+  auto_deploy = true
+
+  # deployment_id = aws_apigatewayv2_deployment.api-deploy.id
+}
+
+# resource "aws_apigatewayv2_deployment" "api-deploy" {
+#   api_id      = aws_apigatewayv2_api.api.id
+#   description = "default"
+
+#   triggers = {
+#     redeployment = sha1(join(",", tolist([
+#       jsonencode(aws_apigatewayv2_integration.api-lambda-integration),
+#       jsonencode(aws_apigatewayv2_route.visitor),
+#     ])))
+#   }
+
+#   lifecycle {
+#     create_before_destroy = true
+#   }
+# }
+
+#Lambda
+
+#Policy: allow invoke from API
+data "aws_iam_policy_document" "lambda-function-policy" {
+  statement {
+    sid    = "AllowsAPIGatewayInvoke"
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["apigateway.amazonaws.com"]
+    }
+
+    actions = ["lambda:InvokeFunction"]
+
+    resources = [aws_lambda_function.visitor-count.arn]
+
+    condition {
+      test     = "ArnLike"
+      variable = "AWS:SourceArn"
+      values   = ["${aws_apigatewayv2_api.api.execution_arn}/*/*/visitor"]
+    }
+  }
+}
+
+resource "aws_lambda_resource_policy" "lambda-exec-perms" {
+  resource_arn = aws_lambda_function.visitor-count.arn
+  policy       = data.aws_iam_policy_document.lambda-function-policy.json
+}
+
+#Lambda role setup
+data "aws_iam_policy_document" "assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+
+resource "aws_iam_role" "lambda-role" {
+  name               = "lambda-exec-role"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+}
+
+#Bundle executable
+data "archive_file" "lambda-archive" {
+  type        = "zip"
+  source_file = "lambda.py"
+  output_path = "lambda.zip"
+}
+
+resource "aws_lambda_function" "visitor-count" {
+  filename      = data.archive_file.lambda-archive.output_path
+  function_name = "inc-visitors"
+  role          = aws_iam_role.lambda-role.arn
+  handler       = "lambda.lambda_handler"
+  code_sha256   = data.archive_file.lambda-archive.output_base64sha256
+
+  runtime = "python3.12"
 }

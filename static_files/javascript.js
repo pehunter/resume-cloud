@@ -1,6 +1,6 @@
 function javascriptLoaded() {
-    let visitCountReq = fetch(
-      "https://4fpvaectw2.execute-api.us-east-2.amazonaws.com/visitor",
+    fetch(
+      "https://ry1scazki4.execute-api.us-east-1.amazonaws.com/visitor",
     )
       .then((resp) => resp.text())
       .then((val) => {
