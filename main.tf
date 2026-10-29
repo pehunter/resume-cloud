@@ -38,6 +38,13 @@ locals {
   }
 }
 
+resource "local_file" "rendered_js" {
+  filename = "subbed.js"
+  content = templatefile("javascript.js", {
+    api_url = aws_apigatewayv2_api.api.api_endpoint
+  })
+}
+
 resource "aws_s3_object" "files" {
   for_each = fileset("static_files/", "*")
 
@@ -47,6 +54,18 @@ resource "aws_s3_object" "files" {
   etag   = filemd5("static_files/${each.value}")
 
   content_type = lookup(local.mime_types, element(split(".", each.value), length(split(".", each.value)) - 1), "text/html")
+
+  depends_on = [aws_s3_bucket.static]
+}
+
+resource "aws_s3_object" "js_template" {
+  bucket = var.bucket_name
+  key    = "javascript.js"
+  source = local_file.rendered_js.filename
+  etag   = filemd5(local_file.rendered_js.filename)
+
+  content_type = "text/javascript"
+  depends_on   = [local_file.rendered_js, aws_s3_bucket.static]
 }
 
 #Bucket policy
@@ -182,7 +201,7 @@ resource "aws_apigatewayv2_stage" "api-default-stage" {
 #Lambda
 
 #Policy: allow invoke from API
-data "aws_iam_policy_document" "lambda-function-policy" {
+data "aws_iam_policy_document" "lambda-api-policy" {
   statement {
     sid    = "AllowsAPIGatewayInvoke"
     effect = "Allow"
@@ -204,9 +223,27 @@ data "aws_iam_policy_document" "lambda-function-policy" {
   }
 }
 
-resource "aws_lambda_resource_policy" "lambda-exec-perms" {
+resource "aws_lambda_resource_policy" "lambda-api-trigger" {
   resource_arn = aws_lambda_function.visitor-count.arn
-  policy       = data.aws_iam_policy_document.lambda-function-policy.json
+  policy       = data.aws_iam_policy_document.lambda-api-policy.json
+}
+
+#Policy: permissions lambda function needs
+data "aws_iam_policy_document" "lambda-exec-policy" {
+  statement {
+    sid    = "LambdaExecPolicy"
+    effect = "Allow"
+
+    actions = [
+      "dynamodb:CreateTable",
+      "dynamodb:ListTables",
+      "dynamodb:GetItem",
+      "dynamodb:UpdateItem",
+      "dynamodb:PutItem"
+    ]
+
+    resources = [aws_dynamodb_table.visitor-ct-table.arn]
+  }
 }
 
 #Lambda role setup
@@ -229,6 +266,14 @@ resource "aws_iam_role" "lambda-role" {
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
+resource "aws_iam_role_policy" "lambda-exec-role-perms" {
+  name = "lambda-exec-perms"
+  role = aws_iam_role.lambda-role.id
+
+  policy = data.aws_iam_policy_document.lambda-exec-policy.json
+}
+
+
 #Bundle executable
 data "archive_file" "lambda-archive" {
   type        = "zip"
@@ -244,4 +289,23 @@ resource "aws_lambda_function" "visitor-count" {
   code_sha256   = data.archive_file.lambda-archive.output_base64sha256
 
   runtime = "python3.12"
+}
+
+#DynamoDB
+resource "aws_dynamodb_table" "visitor-ct-table" {
+  name           = "static-site-db"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 4
+  write_capacity = 4
+  hash_key       = "visitorKey"
+
+  attribute {
+    name = "visitorKey"
+    type = "S"
+  }
+
+  tags = {
+    Name        = "visitor-ct-table"
+    Environment = "production"
+  }
 }
