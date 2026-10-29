@@ -1,4 +1,4 @@
-name: Terraform CI/CD
+name: 'Terraform CI/CD'
 
 on:
     push:
@@ -11,9 +11,9 @@ env:
 
 jobs:
     terraform:
-        name: "Terraform"
+        name: 'Terraform'
         runs-on: ubuntu-latest
     
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+          - name: 'Checkout'
+            uses: actions/checkout@v4
