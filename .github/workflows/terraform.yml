@@ -7,7 +7,7 @@ on:
 
 env:
   TF_VERSION: "1.15.9"
-  AWS_REGION: "us-east-1"
+  AWS_REGION: <"us-east-1">
 
 jobs:
   terraform:
@@ -18,5 +18,12 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v4
 
-      - name: "Login to AWS"
-        run: echo "uhhh"
+      - name: "Configure AWS"
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: <arn:aws:iam::981268234367:role/GithubActions>
+          role-session-name: Github_AWS_Autodeploy
+          aws-region: $AWS_REGION
+      
+      - name: "Get ID"
+        run: aws sts get-caller-identity
