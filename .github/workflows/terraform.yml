@@ -25,7 +25,6 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
           role-to-assume: arn:aws:iam::981268234367:role/GithubActions
-          role-session-name: Github_AWS_Autodeploy
           aws-region: ${{ env.AWS_REGION }}
       
       - name: "Get ID"
