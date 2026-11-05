@@ -3,3 +3,4 @@
 terraform.tfstate.backup
 lambda.zip
 terraform.tfstate
+subbed.js
