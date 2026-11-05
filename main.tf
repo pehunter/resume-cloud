@@ -130,7 +130,7 @@ resource "aws_cloudfront_distribution" "static-s3-distribution" {
   restrictions {
     geo_restriction {
       restriction_type = "whitelist"
-      locations        = ["US", "CA", "GB", "DE"]
+      locations        = ["US", "CA", "DE"]
     }
   }
 
