@@ -27,5 +27,23 @@ jobs:
           role-to-assume: arn:aws:iam::981268234367:role/GitHubAction-AssumeRoleWithAction
           aws-region: ${{ env.AWS_REGION }}
       
-      - name: "Get ID"
-        run: aws sts get-caller-identity
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.15.9"
+      
+      - name: Terraform Format Check
+        run: terraform fmt -check
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+      
+      - name: Terraform Security Check
+        run: tfsec .
+      
+      - name: Terraform Apply
+        if: github.ref == 'refs/head/master' && github.event_name == 'push'
+        run: terraform apply -auto-approve
