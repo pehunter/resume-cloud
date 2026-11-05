@@ -41,6 +41,11 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
       
+      - name: Excuse me
+        env:
+          GH_CONTEXT: ${{toJson(github)}}
+        run: echo $GH_CONTEXT
+      
       - name: Terraform Apply
         if: github.ref == 'refs/head/master' && github.event_name == 'push'
         run: terraform apply -auto-approve
