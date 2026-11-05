@@ -1,9 +1,5 @@
-resource "random_id" "bucket-id" {
-  byte_length = 4
-}
-
 resource "aws_s3_bucket" "infra-bucket" {
-  bucket = "terraform-bucket-${random_id.bucket-id.hex}"
+  bucket = "terraform-bucket-inmyhead"
 }
 
 resource "aws_s3_bucket_versioning" "infra-bucket" {
