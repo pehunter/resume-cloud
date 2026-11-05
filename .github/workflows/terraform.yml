@@ -1,6 +1,8 @@
 name: "Terraform CI/CD"
 
 on:
+  pull_request:
+    paths: ['**.tf', '**.tfvars']
   push:
     branches:
       - master
@@ -12,6 +14,8 @@ env:
 permissions:
       id-token: write   # This is required for requesting the JWT
       contents: read    # This is required for actions/checkout
+      pull-requests: write
+
 jobs:
   terraform:
     name: "Terraform"
@@ -41,6 +45,27 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
       
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -input=false
+        continue-on-error: true
+
+      - name: Comment plan
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `#### Terraform Plan \`${{ steps.plan.outcome }}\`
+                <details markdown="1"><summary>Show Plan</summary>
+                \`\`\`terraform
+                ${{ steps.plan.outputs.stdout }}
+                \`\`\`
+                </details>`
+              });
       - name: Terraform Apply
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         run: terraform apply -auto-approve
