@@ -70,7 +70,7 @@ resource "aws_s3_object" "js_template" {
   bucket = var.bucket_name
   key    = "javascript.js"
   source = local_file.rendered_js.filename
-  etag   = filemd5(local_file.rendered_js.filename)
+  etag   = md5(local_file.rendered_js.filename)
 
   content_type = "text/javascript"
   depends_on   = [local_file.rendered_js, aws_s3_bucket.static]
